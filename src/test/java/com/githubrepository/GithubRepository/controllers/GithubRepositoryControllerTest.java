@@ -58,11 +58,11 @@ class GithubRepositoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].repositoryName", is("Repository1")))
-                .andExpect(jsonPath("$[0].ownerLogin", is("Owner1")))
+                .andExpect(jsonPath("$[0].name", is("Repository1")))
+                .andExpect(jsonPath("$[0].login", is("Owner1")))
                 .andExpect(jsonPath("$[0].branches[0].name", is("master")))
-                .andExpect(jsonPath("$[1].repositoryName", is("Repository2")))
-                .andExpect(jsonPath("$[1].ownerLogin", is("Owner1")))
+                .andExpect(jsonPath("$[1].name", is("Repository2")))
+                .andExpect(jsonPath("$[1].login", is("Owner1")))
                 .andExpect(jsonPath("$[1].branches[0].name", is("master")));
     }
 

@@ -1,10 +1,15 @@
 package com.githubrepository.GithubRepository.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class RepositoryDto {
+    @JsonProperty(value = "name")
     private final String repositoryName;
+    @JsonProperty(value = "login")
     private final String ownerLogin;
+    @JsonProperty(value = "branches")
     private final List<BranchDto> branches;
 
     public RepositoryDto(final Builder builder) {

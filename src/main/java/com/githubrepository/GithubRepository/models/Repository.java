@@ -6,11 +6,13 @@ public class Repository {
 
     private String name;
     private Owner owner;
+    private boolean fork;
     private List<Branch> branches;
 
-    public Repository(final String name, final Owner owner, final List<Branch> branches) {
+    public Repository(final String name, final Owner owner, final boolean fork, final List<Branch> branches) {
         this.name = name;
         this.owner = owner;
+        this.fork = fork;
         this.branches = branches;
     }
 
@@ -31,6 +33,14 @@ public class Repository {
 
     public void setOwner(final Owner owner) {
         this.owner = owner;
+    }
+
+    public boolean isFork() {
+        return this.fork;
+    }
+
+    public void setFork(final boolean fork) {
+        this.fork = fork;
     }
 
     public List<Branch> getBranches() {

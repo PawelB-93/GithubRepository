@@ -1,11 +1,18 @@
-package com.githubrepository.GithubRepository.models;
+package com.githubrepository.GithubRepository.transformers;
+
+import com.githubrepository.GithubRepository.models.Branch;
+import com.githubrepository.GithubRepository.models.BranchDto;
+import com.githubrepository.GithubRepository.models.Repository;
+import com.githubrepository.GithubRepository.models.RepositoryDto;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class RepositoryTransformer {
 
     public RepositoryDto toRepositoryDto(final Repository repository) {
-        RepositoryDto.Builder builder = new RepositoryDto.Builder();
+        final RepositoryDto.Builder builder = new RepositoryDto.Builder();
         builder.withRepositoryName(repository.getName());
         builder.withOwnerLogin(repository.getOwner().getLogin());
         final List<BranchDto> branches = repository.getBranches().stream().map(this::toBranchDto).toList();
@@ -14,7 +21,7 @@ public class RepositoryTransformer {
     }
 
     public BranchDto toBranchDto(final Branch branch) {
-        BranchDto.Builder builder = new BranchDto.Builder();
+        final BranchDto.Builder builder = new BranchDto.Builder();
         builder.withName(branch.getName());
         builder.withSha(branch.getCommit().getSha());
         return builder.build();

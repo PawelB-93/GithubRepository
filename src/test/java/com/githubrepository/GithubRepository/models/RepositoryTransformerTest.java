@@ -1,5 +1,6 @@
 package com.githubrepository.GithubRepository.models;
 
+import com.githubrepository.GithubRepository.transformers.RepositoryTransformer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class RepositoryTransformerTest {
         final Branch branch = new Branch("master", commit);
         final List<Branch> branches = List.of(branch);
         final Owner owner = new Owner("Owner1");
-        final Repository repository = new Repository("Project1", owner, branches);
+        final Repository repository = new Repository("Project1", owner,false, branches);
 
         //WHEN
         final RepositoryDto dto = transformer.toRepositoryDto(repository);

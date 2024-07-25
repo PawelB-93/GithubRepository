@@ -1,7 +1,11 @@
 package com.githubrepository.GithubRepository.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class BranchDto {
+    @JsonProperty(value = "name")
     private final String name;
+    @JsonProperty(value = "sha")
     private final String sha;
 
     public BranchDto(final Builder builder) {

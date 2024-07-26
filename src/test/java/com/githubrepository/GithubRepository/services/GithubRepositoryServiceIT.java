@@ -3,34 +3,32 @@ package com.githubrepository.GithubRepository.services;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 @WireMockTest(httpPort = 8181)
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @ActiveProfiles("test")
 class GithubRepositoryServiceIT {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     private final String ownerLogin = "repositoryOwner";
 
     @Test
-    public void testGetAllRepositories() throws Exception {
+    public void testGetAllRepositories() {
         //GIVEN
         stubFor(WireMock.get(urlEqualTo("/users/" + this.ownerLogin + "/repos"))
                 .willReturn(aResponse()
@@ -45,15 +43,17 @@ class GithubRepositoryServiceIT {
                         .withBody("[{\"name\": \"main\", \"commit\": {\"sha\": \"12345\"}}]")));
         //WHEN
         //THEN
-        this.mockMvc.perform(get("/github/repositoryOwner")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].login").value("repositoryOwner"))
-                .andExpect(jsonPath("$[0].name").value("repository1"));
+        this.webTestClient.get().uri("/github/repositoryOwner")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[0].login").isEqualTo("repositoryOwner")
+                .jsonPath("$[0].name").isEqualTo("repository1");
     }
 
     @Test
-    public void testRepositoriesShouldNotBeReturnedWhenRepositoryIsFork() throws Exception {
+    public void testRepositoriesShouldNotBeReturnedWhenRepositoryIsFork() {
         //GIVEN
         stubFor(WireMock.get(urlEqualTo("/users/" + this.ownerLogin + "/repos"))
                 .willReturn(aResponse()
@@ -68,23 +68,27 @@ class GithubRepositoryServiceIT {
                         .withBody("[{\"name\": \"main\", \"commit\": {\"sha\": \"12345\"}}]")));
         //WHEN
         //THEN
-        this.mockMvc.perform(get("/github/repositoryOwner")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", empty()));
+        this.webTestClient.get().uri("/github/repositoryOwner")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$").isEmpty();
     }
 
     @Test
-    public void testGetAllRepositories_UserNotFound() throws Exception {
+    public void testGetAllRepositories_UserNotFound() {
         //GIVEN
         stubFor(WireMock.get(urlEqualTo("/users/" + this.ownerLogin + "/repos"))
                 .willReturn(aResponse().withStatus(404)));
         //WHEN
         //THEN
-        this.mockMvc.perform(get("/github/repositoryOwner")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status", is("404")))
-                .andExpect(jsonPath("$.message", is("Owner not found!!!")));
+        this.webTestClient.get().uri("/github/repositoryOwner")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("404")
+                .jsonPath("$.message").isEqualTo("Owner not found!!!");
     }
 }

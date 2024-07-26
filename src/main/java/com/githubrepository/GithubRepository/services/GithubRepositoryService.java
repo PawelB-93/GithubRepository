@@ -36,8 +36,11 @@ public class GithubRepositoryService {
     }
 
     public List<RepositoryDto> getByOwnerLogin(final String ownerLogin) {
-        List<Repository> repositories = fetchRepositoriesByOwnerLogin(ownerLogin).stream().filter(repository -> !repository.isFork()).toList();
-        repositories.forEach(repository -> repository.setBranches(fetchBranchesByRepository(ownerLogin, repository.getName())));
+        List<Repository> repositories = fetchRepositoriesByOwnerLogin(ownerLogin).stream()
+                .filter(repository -> !repository.fork())
+                .map(repository -> new Repository(
+                        repository.name(), repository.owner(), repository.fork(), fetchBranchesByRepository(ownerLogin, repository.name())))
+                .toList();
         return repositories.stream().map(transformer::toRepositoryDto).collect(Collectors.toList());
     }
 

@@ -21,7 +21,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,30 +48,28 @@ class GithubRepositoryServiceTest {
         //GIVEN
         final String ownerLogin = "Owner1";
         final Branch branch1 = new Branch(RandomUtils.randomString(), new Commit(RandomUtils.randomString()));
-        final List<Branch> branches1 = new ArrayList<>();
-        final Repository repository1 = new Repository(RandomUtils.randomString(), new Owner(ownerLogin),false, Collections.emptyList());
-        repository1.setBranches(List.of(branch1));
+        final Repository repository1 = new Repository(RandomUtils.randomString(), new Owner(ownerLogin),false, List.of(branch1));
         final List<Repository> repositories = new ArrayList<>();
         repositories.add(repository1);
-        final String repositoriesUrl = String.format("https://api.github.com/repos/Owner1/%s/branches", repository1.getName());
+        final String repositoriesUrl = String.format("https://api.github.com/repos/Owner1/%s/branches", repository1.name());
         //WHEN
         Mockito.when(this.restTemplate.exchange(Mockito.eq("https://api.github.com/users/Owner1/repos"), eq(HttpMethod.GET), eq(null),
                         Mockito.<ParameterizedTypeReference<List<Repository>>>any()))
                 .thenReturn(new ResponseEntity<>(repositories, HttpStatus.OK));
         Mockito.when(this.restTemplate.exchange(Mockito.eq(repositoriesUrl), eq(HttpMethod.GET), eq(null),
                         Mockito.<ParameterizedTypeReference<List<Branch>>>any()))
-                .thenReturn(new ResponseEntity<>(branches1, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(List.of(branch1), HttpStatus.OK));
         Mockito.when(this.transformer.toRepositoryDto(repository1)).thenReturn(new RepositoryDto.Builder()
-                .withRepositoryName(repository1.getName())
+                .withRepositoryName(repository1.name())
                 .withOwnerLogin(ownerLogin)
-                .withBranches(List.of(new BranchDto.Builder().withName(branch1.getName()).withSha(branch1.getCommit().getSha()).build())).build());
+                .withBranches(List.of(new BranchDto.Builder().withName(branch1.name()).withSha(branch1.commit().sha()).build())).build());
         //THEN
         List<RepositoryDto> result = githubService.getByOwnerLogin("Owner1");
         assertThat(result).isNotNull();
-        assertThat(result.get(0).getRepositoryName()).isEqualTo(repository1.getName());
+        assertThat(result.get(0).getRepositoryName()).isEqualTo(repository1.name());
         assertThat(result.get(0).getOwnerLogin()).isEqualTo(ownerLogin);
-        assertThat(result.get(0).getBranches().get(0).getName()).isEqualTo(branch1.getName());
-        assertThat(result.get(0).getBranches().get(0).getSha()).isEqualTo(branch1.getCommit().getSha());
+        assertThat(result.get(0).getBranches().get(0).getName()).isEqualTo(branch1.name());
+        assertThat(result.get(0).getBranches().get(0).getSha()).isEqualTo(branch1.commit().sha());
     }
 
     @Test
@@ -81,33 +78,30 @@ class GithubRepositoryServiceTest {
         final String ownerLogin = "Owner1";
         final Branch branch1 = new Branch(RandomUtils.randomString(), new Commit(RandomUtils.randomString()));
         final Branch branch2 = new Branch(RandomUtils.randomString(), new Commit(RandomUtils.randomString()));
-        final List<Branch> branches = new ArrayList<>();
-        final Repository repository1 = new Repository(RandomUtils.randomString(), new Owner(ownerLogin),true, Collections.emptyList());
-        final Repository repository2 = new Repository(RandomUtils.randomString(), new Owner(ownerLogin),false, Collections.emptyList());
-        repository1.setBranches(List.of(branch1));
-        repository2.setBranches(List.of(branch2));
+        final Repository repository1 = new Repository(RandomUtils.randomString(), new Owner(ownerLogin),true, List.of(branch1));
+        final Repository repository2 = new Repository(RandomUtils.randomString(), new Owner(ownerLogin),false, List.of(branch2));
         final List<Repository> repositories = new ArrayList<>();
         repositories.add(repository1);
         repositories.add(repository2);
-        final String branchesUrl = String.format("https://api.github.com/repos/%s/%s/branches", ownerLogin, repository2.getName());
+        final String branchesUrl = String.format("https://api.github.com/repos/%s/%s/branches", ownerLogin, repository2.name());
         //WHEN
         Mockito.when(this.restTemplate.exchange(Mockito.eq("https://api.github.com/users/Owner1/repos"), eq(HttpMethod.GET), eq(null),
                         Mockito.<ParameterizedTypeReference<List<Repository>>>any()))
                 .thenReturn(new ResponseEntity<>(repositories, HttpStatus.OK));
         Mockito.when(this.restTemplate.exchange(Mockito.eq(branchesUrl), eq(HttpMethod.GET), eq(null),
                         Mockito.<ParameterizedTypeReference<List<Branch>>>any()))
-                .thenReturn(new ResponseEntity<>(branches, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(List.of(branch2), HttpStatus.OK));
         Mockito.when(this.transformer.toRepositoryDto(repository2)).thenReturn(new RepositoryDto.Builder()
-                .withRepositoryName(repository2.getName())
+                .withRepositoryName(repository2.name())
                 .withOwnerLogin(ownerLogin)
-                .withBranches(List.of(new BranchDto.Builder().withName(branch2.getName()).withSha(branch2.getCommit().getSha()).build())).build());
+                .withBranches(List.of(new BranchDto.Builder().withName(branch2.name()).withSha(branch2.commit().sha()).build())).build());
         //THEN
         List<RepositoryDto> result = githubService.getByOwnerLogin("Owner1");
         assertThat(result).isNotNull();
-        assertThat(result.get(0).getRepositoryName()).isEqualTo(repository2.getName());
+        assertThat(result.get(0).getRepositoryName()).isEqualTo(repository2.name());
         assertThat(result.get(0).getOwnerLogin()).isEqualTo(ownerLogin);
-        assertThat(result.get(0).getBranches().get(0).getName()).isEqualTo(branch2.getName());
-        assertThat(result.get(0).getBranches().get(0).getSha()).isEqualTo(branch2.getCommit().getSha());
+        assertThat(result.get(0).getBranches().get(0).getName()).isEqualTo(branch2.name());
+        assertThat(result.get(0).getBranches().get(0).getSha()).isEqualTo(branch2.commit().sha());
     }
 
     @Test

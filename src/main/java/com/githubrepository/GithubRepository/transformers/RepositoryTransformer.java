@@ -11,10 +11,10 @@ import java.util.List;
 @Component
 public class RepositoryTransformer {
 
-public RepositoryDto toRepositoryDto(final Repository repository) {
-    final List<BranchDto> branches = repository.branches().stream().map(this::toBranchDto).toList();
-    return new RepositoryDto(repository.name(), repository.owner().login(), branches);
-}
+    public RepositoryDto toRepositoryDto(final Repository repository) {
+        final List<BranchDto> branches = repository.branches().stream().map(this::toBranchDto).toList();
+        return new RepositoryDto(repository.name(), repository.owner().login(), branches);
+    }
 
     public BranchDto toBranchDto(final Branch branch) {
         return new BranchDto(branch.name(), branch.commit().sha());

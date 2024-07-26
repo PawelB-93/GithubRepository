@@ -9,6 +9,6 @@ public class GithubRepositoryConfiguration {
 
     @Bean
     public WebClient webClient() {
-        return  WebClient.builder().build();
+        return WebClient.builder().build();
     }
 }

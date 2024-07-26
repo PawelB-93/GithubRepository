@@ -31,10 +31,10 @@ class RepositoryTransformerTest {
 
         //THEN
         assertThat(dto).isNotNull();
-        assertThat(dto.getRepositoryName()).isEqualTo("Project1");
-        assertThat(dto.getOwnerLogin()).isEqualTo("Owner1");
-        assertThat(dto.getBranches().get(0).getName()).isEqualTo("master");
-        assertThat(dto.getBranches().get(0).getSha()).isEqualTo("123456");
+        assertThat(dto.repositoryName()).isEqualTo("Project1");
+        assertThat(dto.ownerLogin()).isEqualTo("Owner1");
+        assertThat(dto.branches().getFirst().name()).isEqualTo("master");
+        assertThat(dto.branches().getFirst().sha()).isEqualTo("123456");
     }
 
     @Test
@@ -48,8 +48,8 @@ class RepositoryTransformerTest {
 
         // Then
         assertThat(dto).isNotNull();
-        assertThat(dto.getName()).isEqualTo("master");
-        assertThat(dto.getSha()).isEqualTo("123456");
+        assertThat(dto.name()).isEqualTo("master");
+        assertThat(dto.sha()).isEqualTo("123456");
     }
 
 }

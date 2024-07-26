@@ -6,28 +6,24 @@ import com.githubrepository.GithubRepository.models.RepositoryDto;
 import com.githubrepository.GithubRepository.services.GithubRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
-@WebMvcTest(GithubRepositoryController.class)
+@WebFluxTest(GithubRepositoryController.class)
 class GithubRepositoryControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockBean
     private GithubRepositoryService service;
@@ -36,46 +32,43 @@ class GithubRepositoryControllerTest {
 
     @BeforeEach
     void setUp() {
-        RepositoryDto repository1 = new RepositoryDto.Builder()
-                .withOwnerLogin("Owner1")
-                .withRepositoryName("Repository1")
-                .withBranches(List.of(new BranchDto.Builder().withName("master").withSha("123456").build())).build();
-        RepositoryDto repository2 = new RepositoryDto.Builder()
-                .withOwnerLogin("Owner1")
-                .withRepositoryName("Repository2")
-                .withBranches(List.of(new BranchDto.Builder().withName("master").withSha("654321").build())).build();
+        RepositoryDto repository1 = new RepositoryDto("Repository1", "Owner1", List.of(new BranchDto("master", "123456")));
+        RepositoryDto repository2 = new RepositoryDto("Repository2", "Owner1", List.of(new BranchDto("master", "654321")));
         repositories.add(repository1);
         repositories.add(repository2);
     }
 
     @Test
-    public void testGetByOwnerLoginShouldReturnRepositories() throws Exception {
-        //GIVEN
-        Mockito.when(service.getByOwnerLogin("Owner1")).thenReturn(repositories);
-        //WHEN
-        //THEN
-        mockMvc.perform(get("/github/Owner1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].name", is("Repository1")))
-                .andExpect(jsonPath("$[0].login", is("Owner1")))
-                .andExpect(jsonPath("$[0].branches[0].name", is("master")))
-                .andExpect(jsonPath("$[1].name", is("Repository2")))
-                .andExpect(jsonPath("$[1].login", is("Owner1")))
-                .andExpect(jsonPath("$[1].branches[0].name", is("master")));
+    public void testGetByOwnerLoginShouldReturnRepositories() {
+        // GIVEN
+        when(service.getByOwnerLogin(anyString())).thenReturn(Mono.just(repositories));
+
+        // WHEN & THEN
+        webTestClient.get().uri("/github/Owner1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[0].name").isEqualTo("Repository1")
+                .jsonPath("$[0].login").isEqualTo("Owner1")
+                .jsonPath("$[0].branches[0].name").isEqualTo("master")
+                .jsonPath("$[0].branches[0].sha").isEqualTo("123456")
+                .jsonPath("$[1].name").isEqualTo("Repository2")
+                .jsonPath("$[1].login").isEqualTo("Owner1")
+                .jsonPath("$[1].branches[0].name").isEqualTo("master")
+                .jsonPath("$[1].branches[0].sha").isEqualTo("654321");
     }
 
     @Test
-    public void testGetErrorMessageWhenOwnerDoesNotExist() throws Exception {
+    public void testGetErrorMessageWhenOwnerDoesNotExist() {
         //GIVEN
-        Mockito.when(service.getByOwnerLogin("Owner1")).thenThrow(new OwnerNotFoundException(HttpStatus.NOT_FOUND, "Owner not found!!!"));
+        when(service.getByOwnerLogin("Owner1")).thenThrow(new OwnerNotFoundException(HttpStatus.NOT_FOUND, "Owner not found!!!"));
         //WHEN
         //THEN
-        mockMvc.perform(get("/github/Owner1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status", is("404")))
-                .andExpect(jsonPath("$.message", is("Owner not found!!!")));
+        webTestClient.get().uri("/github/Owner1")
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("404")
+                .jsonPath("$.message").isEqualTo("Owner not found!!!");
     }
 }

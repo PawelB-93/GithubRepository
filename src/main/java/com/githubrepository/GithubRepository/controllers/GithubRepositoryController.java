@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class GithubRepositoryController {
     }
 
     @GetMapping("/{ownerLogin}")
-    public ResponseEntity<List<RepositoryDto>> getAllRepositories(final @PathVariable String ownerLogin) {
-        return ResponseEntity.ok(this.service.getByOwnerLogin(ownerLogin));
+    public Mono<ResponseEntity<List<RepositoryDto>>> getAllRepositories(@PathVariable String ownerLogin) {
+        return service.getByOwnerLogin(ownerLogin).map(repos -> ResponseEntity.ok().body(repos));
     }
 }

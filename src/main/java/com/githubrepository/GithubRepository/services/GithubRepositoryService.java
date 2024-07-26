@@ -44,11 +44,11 @@ public class GithubRepositoryService {
                                 .map(branches -> new Repository(
                                         repository.name(), repository.owner(), repository.fork(), branches)))
                 .collectList()
-                .onErrorMap(WebClientResponseException.class, e -> {
-                    if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                        return new OwnerNotFoundException(e.getStatusCode(), "Owner not found!!!");
+                .onErrorMap(WebClientResponseException.class, exception -> {
+                    if (exception.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        return new OwnerNotFoundException(exception.getStatusCode(), "Owner not found!!!");
                     }
-                    return e;
+                    return exception;
                 })
                 .map(repositories -> repositories.stream()
                         .map(transformer::toRepositoryDto)

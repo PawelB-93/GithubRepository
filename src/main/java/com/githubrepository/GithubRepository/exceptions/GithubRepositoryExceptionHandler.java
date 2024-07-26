@@ -11,6 +11,6 @@ public class GithubRepositoryExceptionHandler {
     @ExceptionHandler({OwnerNotFoundException.class})
     public ResponseEntity<ErrorMessage> handleOwnerNotFoundException(final OwnerNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorMessage(String.valueOf(e.getStatusCode().value()), e.getStatusText()));
+                .body(new ErrorMessage(String.valueOf(e.getStatusCode().value()), e.getReason()));
     }
 }
